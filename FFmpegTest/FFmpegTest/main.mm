@@ -33,11 +33,25 @@ extern "C"{  //C++中需要申明extern "C"来确定引入c文件
 #import <UIKit/UIKit.h>
 #import <Foundation/Foundation.h>
 
+
+typedef struct PacketQueue{
+    AVPacketList *first_pkt, *last_pkt;
+    int nb_packets;
+    int size;
+    SDL_mutex *mutex;
+    SDL_cond *cond;
+}PacketQueue;
+
 int main(int argc, char *argv[]) {
     SDL_Event event;
     AVFormatContext* formatContext = avformat_alloc_context();//初始化AVFormatContext
     AVCodecContext* codeContext = NULL;
+    AVCodecContext* audioCodeContext = NULL;
+    
+    SDL_AudioSpec wanted_spec, spec;
+    
     int videoIndex = -1;
+    int audioIndex = -1;
     av_register_all();//一劳永逸，第一步注册所有的文件格式以及编码器 deprecated
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER);//初始化SDL
     SDL_Window* window = SDL_CreateWindow("", 0, 0, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height, SDL_WINDOW_OPENGL|SDL_WINDOW_MAXIMIZED);//创建SDL_Window,类似于iOS中的UIWindow
@@ -62,7 +76,27 @@ int main(int argc, char *argv[]) {
             videoIndex = i;
             break;
         }
+        if(stream->codecpar->codec_type == AVMEDIA_TYPE_AUDIO){
+            AVCodec* codec = avcodec_find_decoder(stream->codecpar->codec_id);
+            audioCodeContext = avcodec_alloc_context3(codec);
+            audioIndex = i;
+            break;
+        }
     }
+    
+    wanted_spec.freq = audioCodeContext->sample_rate;
+    wanted_spec.format = AUDIO_S16SYS;
+    wanted_spec.channels = audioCodeContext->channels;
+    wanted_spec.silence = 0;
+    wanted_spec.samples = SDL_GL_BUFFER_SIZE;;
+    wanted_spec.callback = audio_callback;
+    wanted_spec.userdata = audioCodeContext;
+    if (SDL_OpenAudio(&wanted_spec, &spec) < 0){
+        return -1;
+    }
+    
+    avcodec_open2(audioCodeContext, audioCodeContext->codec, <#AVDictionary **options#>)
+    
     if(codeContext == NULL)
         return -1;
     
@@ -133,6 +167,42 @@ int main(int argc, char *argv[]) {
     avcodec_close(codeContext);
     avformat_close_input(&formatContext);
     
+    return 0;
+}
+
+void packet_queue_init(PacketQueue *q){
+    memset(q, 0, sizeof(PacketQueue));
+    q->mutex = SDL_CreateMutex();
+    q->cond = SDL_CreateCond();
+}
+
+int packet_queue_put(PacketQueue *q,AVPacket *pkt) {
+    AVPacketList *pktl;
+    if (av_packet_ref(pkt, pkt) < 0){
+        return -1;
+        
+    }
+    
+    pktl = (AVPacketList *) av_malloc(sizeof(AVPacketList));
+    if(!pktl){
+        return -1;
+    }
+    
+    pktl->pkt = *pkt;
+    pktl->next = NULL;
+    
+    SDL_LockMutex(q->mutex);
+    if(!q->last_pkt){
+        q->first_pkt = pktl;
+    }else{
+        q->last_pkt->next = pktl;
+    }
+    
+    q->last_pkt = pktl;
+    q->nb_packets ++;
+    q->size += pktl->pkt.size;
+    SDL_CondSignal(q->cond);
+    SDL_UnlockMutex(q->mutex);
     return 0;
 }
 
