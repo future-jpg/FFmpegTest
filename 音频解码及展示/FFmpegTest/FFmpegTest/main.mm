@@ -26,6 +26,7 @@ typedef struct PacketQueue{
 
 int quit = 0;
 PacketQueue audioq;
+AVFrame wanted_frame;
 
 void packet_queue_init(PacketQueue *q) {
     memset(q, 0, sizeof(PacketQueue));
@@ -101,23 +102,47 @@ static int packet_queue_get(PacketQueue *q, AVPacket *pkt, int block) {
 int audio_decode_frame(AVCodecContext *aCodecCtx, uint8_t * audio_buf, int buf_size) {
     static AVPacket thisPkt;
     static AVFrame frame;
-
+    SwrContext *resample_ctx = NULL;
+    int resampled_data_size;
     int data_size = 0;
+    
+    int output_channels = 2;
+    int output_rate = 48000;
+    int input_channels = aCodecCtx->channels;
+    int input_rate = aCodecCtx->sample_rate;
+    AVSampleFormat input_sample_fmt = aCodecCtx->sample_fmt;
+    AVSampleFormat output_sample_fmt = AV_SAMPLE_FMT_S16;
+    printf("channels[%d=>%d],rate[%d=>%d],sample_fmt[%d=>%d]\n",
+        input_channels,output_channels,input_rate,output_rate,input_sample_fmt,output_sample_fmt);
 
+    resample_ctx = swr_alloc_set_opts(resample_ctx, av_get_default_channel_layout(output_channels),output_sample_fmt,output_rate,
+                                av_get_default_channel_layout(input_channels),input_sample_fmt, input_rate,0,NULL);
+    swr_init(resample_ctx);
+    
     do{
         while (0 == avcodec_receive_frame(aCodecCtx, &frame)) {
             
-            data_size = av_samples_get_buffer_size(NULL, aCodecCtx->channels, frame.nb_samples, aCodecCtx->sample_fmt, 1);
-            memcpy(audio_buf, frame.data[0], data_size);
+//            data_size = av_samples_get_buffer_size(NULL, aCodecCtx->channels, frame.nb_samples, aCodecCtx->sample_fmt, 1);
+//            memcpy(audio_buf, frame.data[0], data_size);
             
-
-            if (data_size <= 0){
-                continue;
+//
+//            if (data_size <= 0){
+//                continue;
+//            }
+//
+//            printf("saving frame %3d\n", aCodecCtx->frame_number);
+//            data_size = frame.nb_samples * av_get_bytes_per_sample((AVSampleFormat)frame.format);
+                                
+            //resample
+            memset(audio_buf,0x00,MAX_AUDIO_FRAME_SIZE);
+            int out_samples = swr_convert(resample_ctx,&audio_buf,frame.nb_samples,(const uint8_t **)frame.data,frame.nb_samples);
+            if(out_samples > 0){
+                resampled_data_size =  av_samples_get_buffer_size(NULL,output_channels ,out_samples, output_sample_fmt, 1);//out_samples*output_channels*av_get_bytes_per_sample(output_sample_fmt);
+            } else {
+                return -1;
             }
-
-            printf("saving frame %3d\n", aCodecCtx->frame_number);
-
-            return data_size;
+            
+            return resampled_data_size;
         }
 
         if (thisPkt.data) {
@@ -219,11 +244,11 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "SDL_OpenAudio: %s \n", SDL_GetError());
         return -1;
     }
-    //
-    //    wanted_frame.format = AV_SAMPLE_FMT_S16;
-    //    wanted_frame.sample_rate = spec.freq;
-    //    wanted_frame.channel_layout = av_get_default_channel_layout(spec.channels);
-    //    wanted_frame.channels = spec.channels;
+
+    wanted_frame.format = AV_SAMPLE_FMT_S16;
+    wanted_frame.sample_rate = spec.freq;
+    wanted_frame.channel_layout = av_get_default_channel_layout(spec.channels);
+    wanted_frame.channels = spec.channels;
 
     avcodec_open2(codeContext, codec, NULL);
 
