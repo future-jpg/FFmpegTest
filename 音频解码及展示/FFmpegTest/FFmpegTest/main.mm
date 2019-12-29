@@ -141,7 +141,7 @@ int audio_decode_frame(AVCodecContext *aCodecCtx, uint8_t * audio_buf, int buf_s
             } else {
                 return -1;
             }
-            
+            swr_free(&resample_ctx);
             return resampled_data_size;
         }
 
@@ -205,7 +205,7 @@ int main(int argc, char *argv[]) {
     av_register_all();//一劳永逸，第一步注册所有的文件格式以及编码器 deprecated
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER);//初始化SDL
 
-    NSString * path = [[NSBundle  mainBundle]pathForResource:@"test.mp3" ofType:@""];//获取文件路径
+    NSString * path = [[NSBundle  mainBundle]pathForResource:@"video.mp4" ofType:@""];//获取文件路径
 
     if(0!=avformat_open_input(&formatContext, [path UTF8String], NULL, NULL)){
         return -1;//第二步打开文件，并存入formatContext中。
