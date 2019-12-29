@@ -205,7 +205,9 @@ double get_audio_clock(VideoState *is) {
     pts = is->audio_clock; // Maintained in the audio thread.
     hw_buf_size = is->audio_buf_size - is->audio_buf_index;
     bytes_per_sec = 0;
+ 
     n = is->audio_st->codec->channels * 2;//2是指量化精度，一般是16bit = 2 B；
+ 
     if (is->audio_st) {
         bytes_per_sec = is->audio_st->codec->sample_rate * n;
     }
@@ -551,7 +553,7 @@ int video_thread(void *arg) {
         }
         pts = 0;
         // Decode video frame.
-        
+
         avcodec_decode_video2(is->video_st->codec, pFrame, &frameFinished, packet);
         
         if (pFrame->best_effort_timestamp == AV_NOPTS_VALUE ){
@@ -622,7 +624,6 @@ int stream_component_open(VideoState *is, int stream_index) {
             SDL_PauseAudio(0);
             break;
         case AVMEDIA_TYPE_VIDEO:
-            
             is->videoStream = stream_index;
             is->video_st = pFormatCtx->streams[stream_index];
             
