@@ -31,41 +31,6 @@ SDL_Texture *bmp;
 uint8_t *buffer;
 BOOL flag = false;
 
-<<<<<<< HEAD
-=======
-// 顺时针旋转 ffmpeg avframe yuv  rotation
-void Rotate90(const AVFrame* src, AVFrame* dst)
-{
-    int half_width = src->width >> 1;
-    int half_height = src->height >> 1;
- 
-    int size = src->linesize[0] * src->height;
-    int half_size = size >> 2;
-
-    for (int j = 0, n = 0; j < src->width; j++) {
-        int pos = size;
-        for (int i = src->height - 1; i >= 0; i--) {
-            pos -= src->linesize[0];
-            dst->data[0][n++] = src->data[0][pos + j];
-        
-        }
-        
-    }
- 
-    for (int j = 0, n = 0; j < half_width; j++) {
-        int pos = half_size;
-        for (int i = half_height - 1; i >= 0; i--) {
-            pos -= src->linesize[1];
-            dst->data[1][n] = src->data[1][pos + j];
-            dst->data[2][n++] = src->data[2][pos + j];
-            
-        }
-    }
-    dst->height = src->width;
-    dst->width = src->height;
-}
->>>>>>> 374c2a4c9127720bcd0a9b8da7caf7c553629bf9
-
 typedef struct PacketQueue {
     AVPacketList *first_pkt, *last_pkt;
     int nb_packets;
@@ -76,11 +41,7 @@ typedef struct PacketQueue {
 
 typedef struct VideoPicture {
     AVFrame *pFrameYUV;
-<<<<<<< HEAD
     int width, height;
-=======
-    int width, height; // Source height & width.
->>>>>>> 374c2a4c9127720bcd0a9b8da7caf7c553629bf9
     int allocated;
 } VideoPicture;
 
@@ -116,10 +77,6 @@ typedef struct VideoState {
 } VideoState;
 SDL_mutex *screen_mutex;
 
-<<<<<<< HEAD
-=======
-// Since we only have one decoding thread, the Big Struct can be global in case we need it.
->>>>>>> 374c2a4c9127720bcd0a9b8da7caf7c553629bf9
 VideoState *global_video_state;
 PacketQueue audioq;
 
@@ -212,11 +169,6 @@ int audio_decode_frame(VideoState *is) {
     int input_rate = aCodecCtx->sample_rate;
     AVSampleFormat input_sample_fmt = aCodecCtx->sample_fmt;
     AVSampleFormat output_sample_fmt = AV_SAMPLE_FMT_S16;
-<<<<<<< HEAD
-=======
-//    printf("channels[%d=>%d],rate[%d=>%d],sample_fmt[%d=>%d]\n",
-//        input_channels,output_channels,input_rate,output_rate,input_sample_fmt,output_sample_fmt);
->>>>>>> 374c2a4c9127720bcd0a9b8da7caf7c553629bf9
 
     resample_ctx = swr_alloc_set_opts(resample_ctx, av_get_default_channel_layout(output_channels),output_sample_fmt,output_rate,
                                 av_get_default_channel_layout(input_channels),input_sample_fmt, input_rate,0,NULL);
@@ -296,22 +248,6 @@ void audio_callback(void *userdata, uint8_t *stream, int len) {
     }
 }
 
-<<<<<<< HEAD
-=======
-//static Uint32 sdl_refresh_timer_cb(Uint32 interval, void *opaque) {
-//    SDL_Event event;
-//    event.type = FF_REFRESH_EVENT;
-//    event.user.data1 = opaque;
-//    SDL_PushEvent(&event);
-//    return 0; // 0 means stop timer.
-//}
-
-// Schedule a video refresh in 'delay' ms.
-//static void schedule_refresh(VideoState *is, int delay) {
-//    SDL_AddTimer(delay, sdl_refresh_timer_cb, is);
-//}
-
->>>>>>> 374c2a4c9127720bcd0a9b8da7caf7c553629bf9
 void video_display(VideoState *is) {
     SDL_Rect rect;
     VideoPicture *vp;
@@ -321,26 +257,6 @@ void video_display(VideoState *is) {
     vp = &is->pictq[is->pictq_rindex];
     [is->pictq_cond unlock];
     if (vp->pFrameYUV) {
-<<<<<<< HEAD
-=======
-//        if (is->video_st->codec->sample_aspect_ratio.num == 0) {
-//            aspect_ratio = 0;
-//        } else {
-//            aspect_ratio = av_q2d(is->video_st->codec->sample_aspect_ratio) * is->video_st->codec->width / is->video_st->codec->height;
-//        }
-//        if (aspect_ratio <= 0.0) {
-//            aspect_ratio = (float) is->video_st->codec->width / (float) is->video_st->codec->height;
-//        }
-//        h = [UIScreen mainScreen].bounds.size.height;
-//        w = ((int)rint(h * aspect_ratio)) & -3;
-//        if (w > [UIScreen mainScreen].bounds.size.width) {
-//            w = [UIScreen mainScreen].bounds.size.width;
-//            h = ((int)rint(w / aspect_ratio)) & -3;
-//        }
-//        x = ([UIScreen mainScreen].bounds.size.width - w) / 2;
-//        y = ([UIScreen mainScreen].bounds.size.height - h) / 2;
-        
->>>>>>> 374c2a4c9127720bcd0a9b8da7caf7c553629bf9
         rect.x = 0;
         rect.y = 0;
         rect.w = is->video_st->codec->width ;
@@ -353,7 +269,6 @@ void video_display(VideoState *is) {
     }
 }
 
-<<<<<<< HEAD
 void video_refresh_timer(void *userdata) {
 
     VideoState *is = (VideoState *)userdata;
@@ -386,39 +301,7 @@ void video_refresh_timer(void *userdata) {
         });
     }
 }
-=======
-//void video_refresh_timer(void *userdata) {
-//
-//    VideoState *is = (VideoState *)userdata;
-//    // vp is used in later tutorials for synchronization.
-//    //VideoPicture *vp;
-//
-////    if (is->video_st) {
-////        if (is->pictq_size == 0) {
-////            schedule_refresh(is, 200);
-////        } else {
-//            //vp = &is->pictq[is->pictq_rindex];
-//
-//            // Now, normally here goes a ton of code about timing, etc. we're just going to guess at a delay for now. You can increase and decrease this value and hard code the timing - but I don't suggest that ;) We'll learn how to do it for real later..
-//            schedule_refresh(is, 200);
-//
-//            // Show the picture!
-//            video_display(is);
-//
-//            // Update queue for next picture!
-//            if (++is->pictq_rindex == VIDEO_PICTURE_QUEUE_SIZE) {
-//                is->pictq_rindex = 0;
-//            }
-//            [is->pictq_cond lock];
-//            is->pictq_size--;
-//            [is->pictq_cond signal];
-//            [is->pictq_cond unlock];
-////        }
-////    } else {
-////        schedule_refresh(is, 200);
-////    }
-//}
->>>>>>> 374c2a4c9127720bcd0a9b8da7caf7c553629bf9
+
 
 void alloc_picture(void *userdata) {
     
@@ -427,10 +310,6 @@ void alloc_picture(void *userdata) {
     
     [is->pictq_cond lock];
     vp = &is->pictq[is->pictq_windex];
-<<<<<<< HEAD
-=======
-    // Allocate a place to put our YUV image on that screen.
->>>>>>> 374c2a4c9127720bcd0a9b8da7caf7c553629bf9
     [is->pictq_cond unlock];
     if (vp->pFrameYUV) {
         av_frame_free(&vp->pFrameYUV);
@@ -448,11 +327,6 @@ void alloc_picture(void *userdata) {
 int queue_picture(VideoState *is, AVFrame *pFrame) {
     VideoPicture *vp;
         
-<<<<<<< HEAD
-    // 需要判断目前缓冲区内有多少图片帧，加锁访问
-=======
-    // Wait until we have space for a new pic.
->>>>>>> 374c2a4c9127720bcd0a9b8da7caf7c553629bf9
     [is->pictq_cond lock];
     while (is->pictq_size >= VIDEO_PICTURE_QUEUE_SIZE && !is->quit) {
         [is->pictq_cond wait];
@@ -463,36 +337,16 @@ int queue_picture(VideoState *is, AVFrame *pFrame) {
         return -1;
     }
     
-<<<<<<< HEAD
     [is->pictq_cond lock];
     vp = &is->pictq[is->pictq_windex];
     [is->pictq_cond unlock];
     if (!vp->pFrameYUV) {
         vp->allocated = 0;
         // 需要在主线程做这个内存分配.并且一直等待分配完成
-=======
-    // windex is set to 0 initially.
-    [is->pictq_cond lock];
-    vp = &is->pictq[is->pictq_windex];
-    [is->pictq_cond unlock];
-    // Allocate or resize the buffer!
-    if (!vp->pFrameYUV) {
-        SDL_Event event;
-        
-        vp->allocated = 0;
-        // We have to do it in the main thread.
-//        event.type = FF_ALLOC_EVENT;
-//        event.user.data1 = is;
-//        SDL_PushEvent(&event);
->>>>>>> 374c2a4c9127720bcd0a9b8da7caf7c553629bf9
         dispatch_sync(dispatch_get_main_queue(), ^{
             alloc_picture(is);
         });
         
-<<<<<<< HEAD
-=======
-        // Wait until we have a picture allocated.
->>>>>>> 374c2a4c9127720bcd0a9b8da7caf7c553629bf9
         [is->pictq_cond lock];
         while (!vp->allocated && !is->quit) {
             [is->pictq_cond wait];
@@ -503,11 +357,6 @@ int queue_picture(VideoState *is, AVFrame *pFrame) {
         }
     }
 
-<<<<<<< HEAD
-    // 分配完内存以后
-=======
-    // We have a place to put our picture on the queue.
->>>>>>> 374c2a4c9127720bcd0a9b8da7caf7c553629bf9
     if (vp->pFrameYUV) {
         
 //        由于解压缩帧不能直接用于SDL展示，因此需要对解压缩帧进行格式转换，pFrameYUV就是用来暂存格式转换后的临时对象。
@@ -521,17 +370,10 @@ int queue_picture(VideoState *is, AVFrame *pFrame) {
 
         avpicture_fill((AVPicture*)vp->pFrameYUV, buffer, AV_PIX_FMT_YUV420P, is->video_st->codec->width, is->video_st->codec->height);//将pFrameYUV中存储数据的对象与刚才分配的内存关联起来。
 
-<<<<<<< HEAD
 //         转成SDL使用的YUV格式
         sws_scale(is->sws_ctx, (uint8_t const * const *)pFrame->data, pFrame->linesize, 0, is->video_st->codec->height, vp->pFrameYUV->data, vp->pFrameYUV->linesize);
 
-//      图片展示缓冲区队列的图片帧入列指针操作
-=======
-//         Convert the image into YUV format that SDL uses.
-        sws_scale(is->sws_ctx, (uint8_t const * const *)pFrame->data, pFrame->linesize, 0, is->video_st->codec->height, vp->pFrameYUV->data, vp->pFrameYUV->linesize);
 
-//         Now we inform our display thread that we have a pic ready.
->>>>>>> 374c2a4c9127720bcd0a9b8da7caf7c553629bf9
         [is->pictq_cond lock];
         if (++is->pictq_windex == VIDEO_PICTURE_QUEUE_SIZE) {
             is->pictq_windex = 0;
@@ -553,22 +395,11 @@ int video_thread(void *arg) {
     
     for (;;) {
         if (packet_queue_get(&is->videoq, packet, 1) < 0) {
-<<<<<<< HEAD
             break;
         }
         
         avcodec_send_packet(is->video_st->codec, packet);
         while( 0 == avcodec_receive_frame(is->video_st->codec, pFrame)) {
-=======
-            // Means we quit getting packets.
-            break;
-        }
-        // Decode video frame.
-        avcodec_decode_video2(is->video_st->codec, pFrame, &frameFinished, packet);
-        
-        // Did we get a video frame?
-        if (frameFinished) {
->>>>>>> 374c2a4c9127720bcd0a9b8da7caf7c553629bf9
             if (queue_picture(is, pFrame) < 0){
                 break;
             }
@@ -591,17 +422,9 @@ int stream_component_open(VideoState *is, int stream_index) {
         return -1;
     }
     
-<<<<<<< HEAD
     codecCtx = pFormatCtx->streams[stream_index]->codec;
     
     if (codecCtx->codec_type == AVMEDIA_TYPE_AUDIO) {
-=======
-    // Get a pointer to the codec context for the video stream.
-    codecCtx = pFormatCtx->streams[stream_index]->codec;
-    
-    if (codecCtx->codec_type == AVMEDIA_TYPE_AUDIO) {
-        // Set audio settings from codec info.
->>>>>>> 374c2a4c9127720bcd0a9b8da7caf7c553629bf9
         wanted_spec.freq = codecCtx->sample_rate;
         wanted_spec.format = AUDIO_S16SYS;
         wanted_spec.channels = codecCtx->channels;
@@ -638,14 +461,10 @@ int stream_component_open(VideoState *is, int stream_index) {
                 bmp = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_IYUV, SDL_TEXTUREACCESS_STREAMING, is->video_st->codec->width, is->video_st->codec->height);//创建SDL_Texture对象，使用SDL_PIXELFORMAT_IYUV格式
             });
             packet_queue_init(&is->videoq);
-<<<<<<< HEAD
-            
             dispatch_async(dispatch_get_global_queue(0, 0), ^{
                 video_thread(is);
             });
-=======
-            is->video_tid = SDL_CreateThread(video_thread,"videoThread",is);
->>>>>>> 374c2a4c9127720bcd0a9b8da7caf7c553629bf9
+
             is->sws_ctx = sws_getContext(is->video_st->codec->width, is->video_st->codec->height, is->video_st->codec->pix_fmt, is->video_st->codec->width, is->video_st->codec->height, AV_PIX_FMT_YUV420P, SWS_BILINEAR, NULL, NULL, NULL);
             break;
         default:
@@ -658,12 +477,8 @@ int decode_interrupt_cb(void *opaque) {
     return (global_video_state && global_video_state->quit);
 }
 
-<<<<<<< HEAD
+
 int stream_read(void *arg) {
-=======
-int decode_thread(void *arg) {
->>>>>>> 374c2a4c9127720bcd0a9b8da7caf7c553629bf9
-    
     VideoState *is = (VideoState *)arg;
     AVFormatContext *pFormatCtx = NULL;
     AVPacket pkt1, *packet = &pkt1;
@@ -687,35 +502,17 @@ int decode_thread(void *arg) {
         return -1;
     }
     
-<<<<<<< HEAD
-=======
-    // Open video file.
->>>>>>> 374c2a4c9127720bcd0a9b8da7caf7c553629bf9
     if (avformat_open_input(&pFormatCtx, is->filename, NULL, NULL) != 0) {
         return -1; // Couldn't open file.
     }
     
     is->pFormatCtx = pFormatCtx;
     
-<<<<<<< HEAD
     if (avformat_find_stream_info(pFormatCtx, NULL)<0) {
         return -1; // Couldn't find stream information.
     }
     av_dump_format(pFormatCtx, 0, is->filename, 0);
     
-=======
-    // Retrieve stream information.
-    if (avformat_find_stream_info(pFormatCtx, NULL)<0) {
-        return -1; // Couldn't find stream information.
-    }
-    
-    // Dump information about file onto standard error.
-    av_dump_format(pFormatCtx, 0, is->filename, 0);
-    
-    
-    
-    // Find the first video stream.
->>>>>>> 374c2a4c9127720bcd0a9b8da7caf7c553629bf9
     for (i = 0; i < pFormatCtx->nb_streams; i++) {
         if (pFormatCtx->streams[i]->codec->codec_type==AVMEDIA_TYPE_VIDEO && video_index < 0) {
             video_index = i;
@@ -733,49 +530,29 @@ int decode_thread(void *arg) {
     
     if (is->videoStream < 0 || is->audioStream < 0) {
         fprintf(stderr, "%s: could not open codecs\n", is->filename);
-<<<<<<< HEAD
         SDL_Event event;
         event.type = FF_QUIT_EVENT;
         event.user.data1 = is;
         SDL_PushEvent(&event);
         return 0;
     }
-    
-=======
-        goto fail;
-    }
-    
-    // Main decode loop.
->>>>>>> 374c2a4c9127720bcd0a9b8da7caf7c553629bf9
     for (;;) {
         if (is->quit) {
             break;
         }
-<<<<<<< HEAD
-    
-=======
-        // Seek stuff goes here.
->>>>>>> 374c2a4c9127720bcd0a9b8da7caf7c553629bf9
         if (is->audioq.size > MAX_AUDIOQ_SIZE || is->videoq.size > MAX_VIDEOQ_SIZE) {
             SDL_Delay(10);
             continue;
         }
         if (av_read_frame(is->pFormatCtx, packet) < 0) {
             if (is->pFormatCtx->pb->error == 0) {
-<<<<<<< HEAD
                 SDL_Delay(100);
-=======
-                SDL_Delay(100); // No error; wait for user input.
->>>>>>> 374c2a4c9127720bcd0a9b8da7caf7c553629bf9
+
                 continue;
             } else {
                 break;
             }
         }
-<<<<<<< HEAD
-=======
-        // Is this a packet from the video stream?
->>>>>>> 374c2a4c9127720bcd0a9b8da7caf7c553629bf9
         if (packet->stream_index == is->videoStream) {
             packet_queue_put(&is->videoq, packet);
         } else if (packet->stream_index == is->audioStream) {
@@ -788,17 +565,6 @@ int decode_thread(void *arg) {
     while (!is->quit) {
         SDL_Delay(100);
     }
-<<<<<<< HEAD
-=======
-    
-fail:
-    if (1) {
-        SDL_Event event;
-        event.type = FF_QUIT_EVENT;
-        event.user.data1 = is;
-        SDL_PushEvent(&event);
-    }
->>>>>>> 374c2a4c9127720bcd0a9b8da7caf7c553629bf9
     return 0;
 }
 
@@ -812,10 +578,6 @@ int main(int argc, char *argv[]) {
     
     NSString * path = [[NSBundle  mainBundle]pathForResource:@"zidangyaliang.mp4" ofType:@""];//获取文件路径
     
-<<<<<<< HEAD
-=======
-    // Register all formats and codecs.
->>>>>>> 374c2a4c9127720bcd0a9b8da7caf7c553629bf9
     av_register_all();
     
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER)) {
@@ -830,7 +592,6 @@ int main(int argc, char *argv[]) {
     
     is->pictq_cond = [[NSCondition alloc] init];
     
-<<<<<<< HEAD
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.04 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         video_refresh_timer(is);
     });
@@ -838,26 +599,7 @@ int main(int argc, char *argv[]) {
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
         stream_read(is);
     });
-    
-=======
-    [NSTimer scheduledTimerWithTimeInterval:0.05 repeats:YES block:^(NSTimer * _Nonnull timer) {
-        video_display(is);
-        [is->pictq_cond lock];
-        if (++is->pictq_rindex == VIDEO_PICTURE_QUEUE_SIZE) {
-            is->pictq_rindex = 0;
-        }
-        
-        is->pictq_size--;
-        [is->pictq_cond signal];
-        [is->pictq_cond unlock];
-    }];
-    
-    is->parse_tid = SDL_CreateThread(decode_thread,"parseThread" ,is);
-    if (!is->parse_tid) {
-        av_free(is);
-        return -1;
-    }
->>>>>>> 374c2a4c9127720bcd0a9b8da7caf7c553629bf9
+
     for (;;) {
         SDL_WaitEvent(&event);
         switch(event.type) {
@@ -870,15 +612,6 @@ int main(int argc, char *argv[]) {
                 SDL_Quit();
                 return 0;
                 break;
-<<<<<<< HEAD
-=======
-            case FF_ALLOC_EVENT:
-                alloc_picture(event.user.data1);
-                break;
-            case FF_REFRESH_EVENT:
-//                video_refresh_timer(event.user.data1);
-                break;
->>>>>>> 374c2a4c9127720bcd0a9b8da7caf7c553629bf9
             default:
                 break;
         }
