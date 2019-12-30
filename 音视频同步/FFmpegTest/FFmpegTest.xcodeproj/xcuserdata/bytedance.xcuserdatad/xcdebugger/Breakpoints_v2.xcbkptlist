@@ -14,8 +14,8 @@
             filePath = "FFmpegTest/main.mm"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "557"
-            endingLineNumber = "557"
+            startingLineNumber = "490"
+            endingLineNumber = "490"
             landmarkName = "video_thread(arg)"
             landmarkType = "9">
          </BreakpointContent>
@@ -30,8 +30,8 @@
             filePath = "FFmpegTest/main.mm"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "553"
-            endingLineNumber = "553"
+            startingLineNumber = "486"
+            endingLineNumber = "486"
             landmarkName = "video_thread(arg)"
             landmarkType = "9">
          </BreakpointContent>
