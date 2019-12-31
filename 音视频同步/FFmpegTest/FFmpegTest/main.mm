@@ -241,6 +241,11 @@ int audio_decode_frame(VideoState *is) {
                 return -1;
             }
             swr_free(&resample_ctx);
+            
+            int n = 2 * output_channels;
+            is->audio_clock += (double) resampled_data_size / (double) (n * output_rate);
+            
+            
             return resampled_data_size;
         }
 
